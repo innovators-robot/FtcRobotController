@@ -114,10 +114,10 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
     final double ARM_COLLAPSED_INTO_ROBOT  = 0;
     final double ARM_COLLECT               = 5 * ARM_TICKS_PER_DEGREE; //Original Value = 250
-    final double ARM_CLEAR_BARRIER         = 5 * ARM_TICKS_PER_DEGREE; //Original Value = 230
+    final double ARM_CLEAR_BARRIER         = 15 * ARM_TICKS_PER_DEGREE; //Original Value = 230
     final double ARM_SCORE_SPECIMEN        = 70 * ARM_TICKS_PER_DEGREE; //Original Value = 160
-    final double ARM_SCORE_SAMPLE_IN_LOW   = 60 * ARM_TICKS_PER_DEGREE; //Original Value = 160
-    final double ARM_SCORE_SAMPLE_IN_HIGH   = 75 * ARM_TICKS_PER_DEGREE; //Original Value = 160 //Added by Serat
+    final double ARM_SCORE_SAMPLE_IN_LOW   = 75 * ARM_TICKS_PER_DEGREE; //Original Value = 160
+    final double ARM_SCORE_SAMPLE_IN_HIGH   = 90 * ARM_TICKS_PER_DEGREE; //Original Value = 160 //Added by Serat
     final double ARM_ATTACH_HANGING_HOOK   = 90 * ARM_TICKS_PER_DEGREE; //Original Value = 120
     final double ARM_WINCH_ROBOT           = 5  * ARM_TICKS_PER_DEGREE; //Original Value = 15
 
@@ -142,7 +142,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     // Added for ViperSlide
     // Positions in encoder counts (adjust for your setup)
     private static final int SLIDE_MIN_POSITION = 20;     // Retracted position - Original Value = 0
-    private static final int SLIDE_MAX_POSITION = 2000;  // Fully extended position Original Value = 3000
+    private static final int SLIDE_MAX_POSITION = 2050;  // Fully extended position Original Value = 3000
     private static final int SLIDE_MID_POSITION = 1000;  // Midway point Original Value = 1500
 
     double slidetargetPosition = (int)SLIDE_MIN_POSITION;
@@ -328,17 +328,28 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             else if (gamepad1.dpad_left) {
                     /* This turns off the intake, folds in the wrist, and moves the arm
                     back to folded inside the robot. This is also the starting configuration */
-                armPosition = ARM_COLLAPSED_INTO_ROBOT;
+                /* armPosition = ARM_COLLAPSED_INTO_ROBOT;
                 intake.setPower(INTAKE_OFF);
-                wrist.setPosition(WRIST_FOLDED_IN);
+                wrist.setPosition(WRIST_FOLDED_IN); */
+                armPosition = ARM_CLEAR_BARRIER;
+                wrist.setPosition(WRIST_FOLDED_OUT);
+                intake.setPower(INTAKE_COLLECT);
+                slidetargetPosition = SLIDE_MIN_POSITION;
+
+
 
                 //wrist.setPosition(0);
             }
 
             else if (gamepad1.dpad_right){
-                /* This is the correct height to score SPECIMEN on the HIGH CHAMBER */
-                armPosition = ARM_SCORE_SPECIMEN;
-                wrist.setPosition(WRIST_FOLDED_OUT);
+                /* This is the correct height to score SPECIMEN on the HIGH CHAMBER
+                 armPosition = ARM_SCORE_SPECIMEN;
+                wrist.setPosition(WRIST_FOLDED_OUT); */
+                slidetargetPosition = SLIDE_MIN_POSITION;
+                armPosition = ARM_COLLAPSED_INTO_ROBOT;
+                intake.setPower(INTAKE_OFF);
+                wrist.setPosition(WRIST_FOLDED_IN);
+
 
 
                 //wrist.setPosition(0.75);
@@ -347,22 +358,31 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
             else if (gamepad1.dpad_up){
                 /* This sets the arm to vertical to hook onto the LOW RUNG for hanging */
-                armPosition = ARM_ATTACH_HANGING_HOOK;
+               /* armPosition = ARM_ATTACH_HANGING_HOOK;
                 intake.setPower(INTAKE_OFF);
                 wrist.setPosition(WRIST_FOLDED_OUT);
-                slidetargetPosition = SLIDE_MAX_POSITION;
+                slidetargetPosition = SLIDE_MAX_POSITION; */
                 //moveToPosition(SLIDE_MAX_POSITION);
                 //wrist.setPosition(0.8);
+                armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
+                wrist.setPosition(WRIST_FOLDED_OUT);
+                intake.setPower(INTAKE_OFF);
+                slidetargetPosition = SLIDE_MAX_POSITION;
+
 
             }
 
             else if (gamepad1.dpad_down){
                 /* this moves the arm down to lift the robot up once it has been hooked */
-                armPosition = ARM_WINCH_ROBOT;
+                /*armPosition = ARM_WINCH_ROBOT;
                 intake.setPower(INTAKE_OFF);
                 slidetargetPosition = SLIDE_MIN_POSITION;
-                wrist.setPosition(WRIST_FOLDED_IN);
+                wrist.setPosition(WRIST_FOLDED_IN);*/
                 //wrist.setPosition(0.6);
+                armPosition = ARM_SCORE_SAMPLE_IN_LOW;
+                wrist.setPosition(WRIST_FOLDED_OUT);
+                intake.setPower(INTAKE_OFF);
+                slidetargetPosition = SLIDE_MIN_POSITION;
             }
 
 
