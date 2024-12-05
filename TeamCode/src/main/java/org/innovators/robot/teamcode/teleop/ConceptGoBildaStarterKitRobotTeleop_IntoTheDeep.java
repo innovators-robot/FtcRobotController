@@ -20,7 +20,7 @@
  *   SOFTWARE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.innovators.robot.teamcode.teleop;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -116,9 +116,9 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     final double ARM_COLLECT               = 5 * ARM_TICKS_PER_DEGREE; //Original Value = 250
     final double ARM_CLEAR_BARRIER         = 15 * ARM_TICKS_PER_DEGREE; //Original Value = 230
     final double ARM_SCORE_SPECIMEN        = 70 * ARM_TICKS_PER_DEGREE; //Original Value = 160
-    final double ARM_SCORE_SAMPLE_IN_LOW   = 75 * ARM_TICKS_PER_DEGREE; //Original Value = 160
+    final double ARM_SCORE_SAMPLE_IN_LOW   = 80 * ARM_TICKS_PER_DEGREE; //Original Value = 160
     final double ARM_SCORE_SAMPLE_IN_HIGH   = 90 * ARM_TICKS_PER_DEGREE; //Original Value = 160 //Added by Serat
-    final double ARM_ATTACH_HANGING_HOOK   = 90 * ARM_TICKS_PER_DEGREE; //Original Value = 120
+    final double ARM_ATTACH_HANGING_HOOK   = 130 * ARM_TICKS_PER_DEGREE; //Original Value = 120
     final double ARM_WINCH_ROBOT           = 5  * ARM_TICKS_PER_DEGREE; //Original Value = 15
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
@@ -133,13 +133,19 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     /* A number in degrees that the triggers can adjust the arm position by */
     final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE; //= 15 * ARM_TICKS_PER_DEGREE;
 
+    final double VIPER_FUDGE_FACTOR = 100;
+
+
     /* Variables that are used to set the arm to a specific position */
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
+    double viperPositionFudgeFactor;
+
+    double viperCurrentPosition;
+    double viperNewPosition;
 
 
-
-    // Added for ViperSlide
+    // Added for ViperSlide - Serat
     // Positions in encoder counts (adjust for your setup)
     private static final int SLIDE_MIN_POSITION = 20;     // Retracted position - Original Value = 0
     private static final int SLIDE_MAX_POSITION = 2050;  // Fully extended position Original Value = 3000
@@ -286,15 +292,27 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             one cycle. Which can cause strange behavior. */
 
             if (gamepad1.a) {
+                wrist.setPosition(WRIST_FOLDED_OUT);
                 intake.setPower(INTAKE_COLLECT);
             }
             else if (gamepad1.x) {
+                wrist.setPosition(WRIST_FOLDED_OUT);
                 intake.setPower(INTAKE_OFF);
+
             }
             else if (gamepad1.b) {
+                wrist.setPosition(WRIST_FOLDED_OUT);
                 intake.setPower(INTAKE_DEPOSIT);
             }
+            else if (gamepad1.y){
+                /* This is the correct height to score the sample in the LOW BASKET */
+                //armPosition = ARM_SCORE_SAMPLE_IN_LOW;
+                armPosition = ARM_ATTACH_HANGING_HOOK;
+                wrist.setPosition(WRIST_FOLDED_IN);
+                intake.setPower(INTAKE_OFF);
+                slidetargetPosition = SLIDE_MIN_POSITION;
 
+            }
 
 
             /* Here we implement a set of if else statements to set our arm to different scoring positions.
@@ -305,25 +323,27 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             turns the intake on to the COLLECT mode.*/
 
             if(gamepad1.right_bumper){
-                /* This is the intaking/collecting arm position */
+                /* This is the intaking/collecting arm position
                 armPosition = ARM_COLLECT;
                 wrist.setPosition(WRIST_FOLDED_OUT);
-                intake.setPower(INTAKE_COLLECT);
+                intake.setPower(INTAKE_COLLECT); */
+                viperCurrentPosition = viperSlide.getCurrentPosition();
+                viperNewPosition = viperCurrentPosition + VIPER_FUDGE_FACTOR;
+                slidetargetPosition = viperNewPosition;
             }
 
             else if (gamepad1.left_bumper){
                     /* This is about 20° up from the collecting position to clear the barrier
                     Note here that we don't set the wrist position or the intake power when we
                     select this "mode", this means that the intake and wrist will continue what
-                    they were doing before we clicked left bumper. */
-                armPosition = ARM_CLEAR_BARRIER;
+                    they were doing before we clicked left bumper.
+                armPosition = ARM_CLEAR_BARRIER; */
+                viperCurrentPosition = viperSlide.getCurrentPosition();
+                viperNewPosition = viperCurrentPosition - VIPER_FUDGE_FACTOR;
+                slidetargetPosition = viperNewPosition;
             }
 
-            else if (gamepad1.y){
-                /* This is the correct height to score the sample in the LOW BASKET */
-                //armPosition = ARM_SCORE_SAMPLE_IN_LOW;
-                armPosition = ARM_ATTACH_HANGING_HOOK;
-            }
+
 
             else if (gamepad1.dpad_left) {
                     /* This turns off the intake, folds in the wrist, and moves the arm
@@ -345,13 +365,9 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 /* This is the correct height to score SPECIMEN on the HIGH CHAMBER
                  armPosition = ARM_SCORE_SPECIMEN;
                 wrist.setPosition(WRIST_FOLDED_OUT); */
+                intake.setPower(INTAKE_OFF);
                 slidetargetPosition = SLIDE_MIN_POSITION;
                 armPosition = ARM_COLLAPSED_INTO_ROBOT;
-                intake.setPower(INTAKE_OFF);
-                wrist.setPosition(WRIST_FOLDED_IN);
-
-
-
                 //wrist.setPosition(0.75);
 
             }
@@ -398,7 +414,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad1.right_trigger + (-gamepad1.left_trigger));
 
-
             /* Here we set the target position of our arm to match the variable that was selected
             by the driver.
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
@@ -408,7 +423,11 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             ((DcMotorEx) armMotor).setVelocity(1000); //Original Value = 2100
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            ((DcMotorEx) viperSlide).setVelocity(200); //Original Value = 2100
+
+            //viperPositionFudgeFactor = VIPER_FUDGE_FACTOR * (gamepad1.right_bumper + (-gamepad1.left_bumper));
+
+
+            ((DcMotorEx) viperSlide).setVelocity(500); //Original Value = 2100
             viperSlide.setPower(0.5); // Adjust speed if needed - Original Value - 1.0
             viperSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
