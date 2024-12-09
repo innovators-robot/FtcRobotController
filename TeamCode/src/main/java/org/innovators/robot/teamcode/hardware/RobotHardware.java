@@ -20,9 +20,19 @@ public class RobotHardware {
         // Two motor wheel driving
         leftDriveMotor = hwMap.get(DcMotor.class, "left_drive_motor");
         rightDriveMotor = hwMap.get(DcMotor.class, "right_drive_motor");
+        /* Replace code above with this code for Mecanum Wheels. Change the variables if needed.
+        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backRight"); */
 
         leftDriveMotor.setDirection(DcMotor.Direction.FORWARD);
         rightDriveMotor.setDirection(DcMotor.Direction.REVERSE);
+        /* Replace code above with this code for Mecanum Wheels. Change the variables if needed.
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        backRight.setDirection(DcMotor.Direction.FORWARD); */
 
         // armExtension wrist and gecko wheel
         armExtensionMotor = hwMap.get(DcMotor.class, "arm_extension_motor");

@@ -222,7 +222,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
         /* Make sure that the intake is off, and the wrist is folded in. */
         intake.setPower(INTAKE_OFF);
         //wrist.setPosition(WRIST_FOLDED_IN); //Commented by Serat
-        wrist.setPosition(0.2);  //Added by Serat
+        wrist.setPosition(0.85);  //Added by Serat [previously 0.2]
         wrist.setDirection(Servo.Direction.REVERSE); //Added by Serat to reverse the direction of the wrist servo - Do not change.
 
         /* Send telemetry message to signify robot waiting */
@@ -246,7 +246,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
             //Added by Serat
             //armPosition = ARM_WINCH_ROBOT;
-            //wrist.setPosition(0.2);
+            wrist.setPosition(0.75);
 
             /* Set the drive and turn variables to follow the joysticks on the gamepad.
             the joysticks decrease as you push them up. So reverse the Y axis. */
