@@ -69,26 +69,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  */
 
 
-@TeleOp(name="FTC Starter Kit Example Robot (INTO THE DEEP)", group="Robot")
+@TeleOp(name="IGNORE - Innovators TeleOp (INTO THE DEEP)", group="Robot")
 //@Disabled
-public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMode {
+public class InnovatorsTeleop_IntoTheDeep extends LinearOpMode {
 
     /* Declare OpMode members. */
-    //public DcMotor  leftDrive   = null; //the left drivetrain motor
-    //public DcMotor  rightDrive  = null; //the right drivetrain motor
+    public DcMotor  leftDrive   = null; //the left drivetrain motor
+    public DcMotor  rightDrive  = null; //the right drivetrain motor
     public DcMotor  armMotor    = null; //the arm motor
     //public CRServo  intake      = null; //the active intake servo
     public Servo    wrist       = null; //the wrist servo
+
     public Servo    claw       = null; //the wrist servo
+
 
 
     private DcMotor viperSlide = null; //Added for ViperSlide
 
 
-    private DcMotor frontLeft;
-    private DcMotor frontRight;
-    private DcMotor backLeft;
-    private DcMotor backRight;
 
 
     /* This constant is the number of encoder ticks for each degree of rotation of the arm.
@@ -128,13 +126,20 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     final double ARM_WINCH_ROBOT           = 5  * ARM_TICKS_PER_DEGREE; //Original Value = 15
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
-    final double INTAKE_COLLECT    = -1.0;
-    final double INTAKE_OFF        =  0.0;
-    final double INTAKE_DEPOSIT    =  0.5;
+    //final double INTAKE_COLLECT    = -1.0;
+   // final double INTAKE_OFF        =  0.0;
+   // final double INTAKE_DEPOSIT    =  0.5;
 
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
     final double WRIST_FOLDED_IN   = 0.2; // Serat - This was 0.8333
     final double WRIST_FOLDED_OUT  = 0.75; // Serat - This was 0.5
+
+
+    /* Variables to store the positions of the claw */
+    final double CLAW_CLOSED   = 0.0;
+    final double CLAW_OPEN  = 1;
+
+
 
     /* A number in degrees that the triggers can adjust the arm position by */
     final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE; //= 15 * ARM_TICKS_PER_DEGREE;
@@ -174,27 +179,17 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
 
         /* Define and Initialize Motors */
-        //leftDrive  = hardwareMap.get(DcMotor.class, "left_front_drive"); //the left drivetrain motor
-        //rightDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); //the right drivetrain motor
+        leftDrive  = hardwareMap.get(DcMotor.class, "left_front_drive"); //the left drivetrain motor
+        rightDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); //the right drivetrain motor
         armMotor   = hardwareMap.get(DcMotor.class, "left_arm"); //the arm motor
         viperSlide = hardwareMap.get(DcMotor.class, "viperSlide"); //Added for viperSlide
 
-        // Initialize motors
-        frontLeft = hardwareMap.dcMotor.get("frontLeft");
-        frontRight = hardwareMap.dcMotor.get("frontRight");
-        backLeft = hardwareMap.dcMotor.get("backLeft");
-        backRight = hardwareMap.dcMotor.get("backRight");
 
 
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
         for this robot, we reverse the right motor.*/
-        //leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        //rightDrive.setDirection(DcMotor.Direction.REVERSE);
-
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-
-
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
         //Added by Serat
         armMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         viperSlide.setDirection(DcMotor.Direction.REVERSE);
@@ -203,13 +198,8 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
         /* Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to slow down
         much faster when it is coasting. This creates a much more controllable drivetrain. As the robot
         stops much quicker. */
-        //leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        //rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         viperSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE); //Added for ViperSlide
 
@@ -237,13 +227,12 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
         //viperSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         /* Define and initialize servos.*/
-        //intake = hardwareMap.get(CRServo.class, "intake");
-        claw  = hardwareMap.get(Servo.class, "claw");
+       // intake = hardwareMap.get(CRServo.class, "intake");
         wrist  = hardwareMap.get(Servo.class, "wrist");
+        claw  = hardwareMap.get(Servo.class, "claw");
 
         /* Make sure that the intake is off, and the wrist is folded in. */
         //intake.setPower(INTAKE_OFF);
-        claw.setPosition(0.0);
         //wrist.setPosition(WRIST_FOLDED_IN); //Commented by Serat
         wrist.setPosition(0.85);  //Added by Serat [previously 0.2]
         wrist.setDirection(Servo.Direction.REVERSE); //Added by Serat to reverse the direction of the wrist servo - Do not change.
@@ -271,12 +260,10 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             //armPosition = ARM_WINCH_ROBOT;
             wrist.setPosition(0.75);
 
-
-
             /* Set the drive and turn variables to follow the joysticks on the gamepad.
             the joysticks decrease as you push them up. So reverse the Y axis. */
-            //forward = -gamepad1.left_stick_y;
-            //rotate  = gamepad1.right_stick_x;
+            forward = -gamepad1.left_stick_y;
+            rotate  = gamepad1.right_stick_x;
 
 
             /* Here we "mix" the input channels together to find the power to apply to each motor.
@@ -285,50 +272,21 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             the right and left motors need to move in opposite directions. So we will add rotate to
             forward for the left motor, and subtract rotate from forward for the right motor. */
 
-            //left  = forward + rotate;
-            //right = forward - rotate;
+            left  = forward + rotate;
+            right = forward - rotate;
 
             /* Normalize the values so neither exceed +/- 1.0 */
-            /*
             max = Math.max(Math.abs(left), Math.abs(right));
             if (max > 1.0)
             {
                 left /= max;
                 right /= max;
             }
-            */
-
 
             /* Set the motor power to the variables we've mixed and normalized */
-            //leftDrive.setPower(left);
-            //rightDrive.setPower(right);
+            leftDrive.setPower(left);
+            rightDrive.setPower(right);
 
-            // Get joystick values
-            double y = -gamepad1.left_stick_y; // Y-axis for forward/backward
-            double x = gamepad1.left_stick_x; // X-axis for strafing
-            double rx = gamepad1.right_stick_x; // Right X-axis for rotation
-
-            // Calculate motor powers
-            double frontLeftPower = y + x + rx;
-            double backLeftPower = y - x + rx;
-            double frontRightPower = y - x - rx;
-            double backRightPower = y + x - rx;
-
-            // Normalize motor powers
-             max = Math.max(Math.abs(frontLeftPower), Math.max(Math.abs(backLeftPower),
-                    Math.max(Math.abs(frontRightPower), Math.abs(backRightPower))));
-            if (max > 1) {
-                frontLeftPower /= max;
-                backLeftPower /= max;
-                frontRightPower /= max;
-                backRightPower /= max;
-            }
-
-            // Set motor powers
-            frontLeft.setPower(frontLeftPower);
-            backLeft.setPower(backLeftPower);
-            frontRight.setPower(frontRightPower);
-            backRight.setPower(backRightPower);
 
 
             /* Here we handle the three buttons that have direct control of the intake speed.
@@ -347,21 +305,18 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
             if (gamepad1.a) {
                 wrist.setPosition(WRIST_FOLDED_OUT);
-                claw.setPosition(1.0);
                 //intake.setPower(INTAKE_COLLECT);
+                claw.setPosition(CLAW_OPEN);
             }
             else if (gamepad1.x) {
                 wrist.setPosition(WRIST_FOLDED_OUT);
                 //intake.setPower(INTAKE_OFF);
-                claw.setPosition(0.0);
-
-
+                claw.setPosition(CLAW_CLOSED);
             }
             else if (gamepad1.b) {
                 wrist.setPosition(WRIST_FOLDED_OUT);
                 //intake.setPower(INTAKE_DEPOSIT);
-                //claw.setPosition(1.0);
-
+                claw.setPosition(CLAW_OPEN);
             }
             else if (gamepad1.y){
                 /* This is the correct height to score the sample in the LOW BASKET */
@@ -369,7 +324,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 armPosition = ARM_ATTACH_HANGING_HOOK;
                 wrist.setPosition(WRIST_FOLDED_IN);
                 //intake.setPower(INTAKE_OFF);
-                //claw.setPosition(0.0);
                 slidetargetPosition = SLIDE_MIN_POSITION;
 
             }
@@ -414,7 +368,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 armPosition = ARM_CLEAR_BARRIER;
                 wrist.setPosition(WRIST_FOLDED_OUT);
                 //intake.setPower(INTAKE_COLLECT);
-                //claw.setPosition(0.0);
                 slidetargetPosition = SLIDE_MIN_POSITION;
 
 
@@ -427,7 +380,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                  armPosition = ARM_SCORE_SPECIMEN;
                 wrist.setPosition(WRIST_FOLDED_OUT); */
                 //intake.setPower(INTAKE_OFF);
-                //claw.setPosition(0.0);
                 slidetargetPosition = SLIDE_MIN_POSITION;
                 armPosition = ARM_COLLAPSED_INTO_ROBOT;
                 //wrist.setPosition(0.75);
@@ -445,7 +397,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 armPosition = ARM_SCORE_SAMPLE_IN_HIGH;
                 wrist.setPosition(WRIST_FOLDED_OUT);
                 //intake.setPower(INTAKE_OFF);
-                //claw.setPosition(0.0);
                 slidetargetPosition = SLIDE_MAX_POSITION;
 
 
@@ -461,7 +412,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 armPosition = ARM_SCORE_SAMPLE_IN_LOW;
                 wrist.setPosition(WRIST_FOLDED_OUT);
                 //intake.setPower(INTAKE_OFF);
-                //claw.setPosition(0.0);
                 slidetargetPosition = SLIDE_MIN_POSITION;
             }
 

@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.innovators.robot.teamcode.hardware.RobotHardware;
 import org.innovators.robot.teamcode.util.Constants;
 
-@TeleOp(name="Viper Arm Wrist Gecko Wheel Control", group="TeleOp")
+@TeleOp(name="IGNORE - Viper Arm Wrist Gecko Wheel Control", group="TeleOp")
 public class BasicViperArmWristGeckoDrive extends LinearOpMode {
     private final RobotHardware robot = new RobotHardware();
     private final ElapsedTime runtime = new ElapsedTime();
