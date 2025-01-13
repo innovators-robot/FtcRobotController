@@ -80,7 +80,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     //public CRServo  intake      = null; //the active intake servo
     public Servo    wrist       = null; //the wrist servo
     public Servo    claw       = null; //the wrist servo
-
+    public Servo    finger       = null; //the finger servo
 
     private DcMotor viperSlide = null; //Added for ViperSlide
 
@@ -121,7 +121,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     final double ARM_COLLAPSED_INTO_ROBOT  = 0;
     final double ARM_COLLECT               = 5 * ARM_TICKS_PER_DEGREE; //Original Value = 250
     final double ARM_CLEAR_BARRIER         = 15 * ARM_TICKS_PER_DEGREE; //Original Value = 230
-    final double ARM_SCORE_SPECIMEN        = 68 * ARM_TICKS_PER_DEGREE; //Original Value = 160
+    final double ARM_SCORE_SPECIMEN        = 70 * ARM_TICKS_PER_DEGREE; //Original Value = 160
     final double ARM_SCORE_SAMPLE_IN_LOW   = 80 * ARM_TICKS_PER_DEGREE; //Original Value = 160
     final double ARM_SCORE_SAMPLE_IN_HIGH   = 90 * ARM_TICKS_PER_DEGREE; //Original Value = 160 //Added by Serat
     final double ARM_ATTACH_HANGING_HOOK   = 130 * ARM_TICKS_PER_DEGREE; //Original Value = 120
@@ -131,6 +131,15 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     final double INTAKE_COLLECT    = -1.0;
     final double INTAKE_OFF        =  0.0;
     final double INTAKE_DEPOSIT    =  0.5;
+
+
+    final double FINGER_UP    = -1.0;
+    final double FINGER_DOWN        =  0.0;
+    final double FINGER_STRAIGHT    =  0.4;
+
+
+
+
 
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
     final double WRIST_FOLDED_IN   = 0.2; // Serat - This was 0.8333
@@ -153,7 +162,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
     // Added for ViperSlide - Serat
     // Positions in encoder counts (adjust for your setup)
-    private static final int SLIDE_MIN_POSITION = 20;     // Retracted position - Original Value = 0
+    private static final int SLIDE_MIN_POSITION = 0;     // Retracted position - Original Value = 0
     private static final int SLIDE_MAX_POSITION = 2050;  // Fully extended position Original Value = 3000
     private static final int SLIDE_MID_POSITION = 1000;  // Midway point Original Value = 1500
 
@@ -240,6 +249,8 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
         //intake = hardwareMap.get(CRServo.class, "intake");
         claw  = hardwareMap.get(Servo.class, "claw");
         wrist  = hardwareMap.get(Servo.class, "wrist");
+        finger  = hardwareMap.get(Servo.class, "finger");
+
 
         /* Make sure that the intake is off, and the wrist is folded in. */
         //intake.setPower(INTAKE_OFF);
@@ -247,6 +258,8 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
         //wrist.setPosition(WRIST_FOLDED_IN); //Commented by Serat
         wrist.setPosition(0.85);  //Added by Serat [previously 0.2]
         wrist.setDirection(Servo.Direction.REVERSE); //Added by Serat to reverse the direction of the wrist servo - Do not change.
+        finger.setPosition(FINGER_UP);
+
 
         /* Send telemetry message to signify robot waiting */
         telemetry.addLine("Robot Ready.");
@@ -270,6 +283,10 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             //Added by Serat
             //armPosition = ARM_WINCH_ROBOT;
             wrist.setPosition(0.75);
+            finger.setPosition(FINGER_STRAIGHT);
+            //armPosition = ARM_CLEAR_BARRIER;
+
+
 
 
 
@@ -469,6 +486,17 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 //claw.setPosition(0.0);
                 slidetargetPosition = SLIDE_MIN_POSITION;
             }
+            else if (gamepad2.dpad_down){
+                finger.setPosition(0.85);
+            }
+            else if (gamepad2.dpad_left){
+                finger.setPosition(FINGER_STRAIGHT);
+            }
+            else if (gamepad2.dpad_up){
+                finger.setPosition(FINGER_UP);
+            }
+
+
 
 
 
@@ -497,7 +525,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
 
             ((DcMotorEx) viperSlide).setVelocity(1500); //Original Value = 2100
-            viperSlide.setPower(0.5); // Adjust speed if needed - Original Value - 1.0
+           // viperSlide.setPower(0.5); // Adjust speed if needed - Original Value - 1.0
             viperSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
@@ -540,6 +568,13 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             telemetry.addData("wrist Position: ", wrist.getPosition());
             telemetry.addData("wrist Direction: ", wrist.getDirection());
 
+            telemetry.addData("claw Position: ", claw.getPosition());
+            telemetry.addData("claw Direction: ", claw.getDirection());
+
+            telemetry.addData("finger Position: ", finger.getPosition());
+            telemetry.addData("finger Direction: ", finger.getDirection());
+
+
 
             telemetry.addData("Slider Direction: ", viperSlide.getDirection());
             telemetry.addData("Slider Current Position", viperSlide.getCurrentPosition());
@@ -548,11 +583,11 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
 
 
-            //telemetry.addData("armCurrentMode: ", armMotor.getMode());
-            //telemetry.addData("armDirection: ", armMotor.getDirection());
-            //telemetry.addData("armMotorType: ", armMotor.getMotorType());
-            //telemetry.addData("armMotorCurrent: ",  ((DcMotorEx) armMotor).getCurrent(CurrentUnit.AMPS));
-            //telemetry.addData("armMotorPower: ", armMotor.getPower());
+            telemetry.addData("viperSlideCurrentMode: ", viperSlide.getMode());
+            telemetry.addData("viperSlideDirection: ", viperSlide.getDirection());
+            telemetry.addData("viperSlideMotorType: ", viperSlide.getMotorType());
+            telemetry.addData("viperSlideMotorCurrent: ",  ((DcMotorEx) viperSlide).getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("viperSlideMotorPower: ", viperSlide.getPower());
 
 
             //telemetry.addData("ARM_TICKS_PER_DEGREE: ", ARM_TICKS_PER_DEGREE);
@@ -569,6 +604,13 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             telemetry.update();
 
         }
+
+        //Adding code to execute when we stop the program
+        claw.setPosition(0.0);
+        wrist.setPosition(0.85);
+        wrist.setDirection(Servo.Direction.REVERSE);
+        //finger.setPosition(FINGER_UP);
+
     }
 
 
