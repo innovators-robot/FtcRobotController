@@ -118,10 +118,14 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     If you'd like it to move further, increase that number. If you'd like it to not move
     as far from the starting position, decrease it. */
 
-    final double ARM_COLLAPSED_INTO_ROBOT  = 0;
+    final double ARM_COLLAPSED_INTO_ROBOT  = 20;
     final double ARM_COLLECT               = 5 * ARM_TICKS_PER_DEGREE; //Original Value = 250
     final double ARM_CLEAR_BARRIER         = 15 * ARM_TICKS_PER_DEGREE; //Original Value = 230
     final double ARM_SCORE_SPECIMEN        = 70 * ARM_TICKS_PER_DEGREE; //Original Value = 160
+
+    final double ARM_SCORE_SPECIMEN_DOWN        = 48 * ARM_TICKS_PER_DEGREE; //Original Value = 160
+
+
     final double ARM_SCORE_SAMPLE_IN_LOW   = 80 * ARM_TICKS_PER_DEGREE; //Original Value = 160
     final double ARM_SCORE_SAMPLE_IN_HIGH   = 90 * ARM_TICKS_PER_DEGREE; //Original Value = 160 //Added by Serat
     final double ARM_ATTACH_HANGING_HOOK   = 130 * ARM_TICKS_PER_DEGREE; //Original Value = 120
@@ -386,7 +390,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 //claw.setPosition(1.0);
 
             }
-            else if (gamepad1.y){
+            else if (gamepad2.y){
                 /* This is the correct height to score the sample in the LOW BASKET */
                 //armPosition = ARM_SCORE_SAMPLE_IN_LOW;
                 wrist.setPosition(WRIST_FOLDED_IN);
@@ -451,7 +455,9 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 //intake.setPower(INTAKE_OFF);
                 //claw.setPosition(0.0);
                 slidetargetPosition = SLIDE_MIN_POSITION;
-                armPosition = ARM_COLLAPSED_INTO_ROBOT;
+                armPosition = ARM_SCORE_SPECIMEN_DOWN;
+                //claw.setPosition(1.0);
+
                 //wrist.setPosition(0.75);
 
             }
@@ -495,6 +501,27 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             else if (gamepad2.dpad_up){
                 finger.setPosition(FINGER_UP);
             }
+            else if (gamepad2.a) {
+                wrist.setPosition(WRIST_FOLDED_OUT);
+                claw.setPosition(1.0);
+             }
+            else if (gamepad2.b) {
+                wrist.setPosition(WRIST_FOLDED_OUT);
+                claw.setPosition(0.0);
+            }
+            else if (gamepad2.dpad_right){
+                /* This is the correct height to score SPECIMEN on the HIGH CHAMBER
+                 armPosition = ARM_SCORE_SPECIMEN;
+                wrist.setPosition(WRIST_FOLDED_OUT); */
+                //intake.setPower(INTAKE_OFF);
+                //claw.setPosition(0.0);
+                slidetargetPosition = SLIDE_MIN_POSITION;
+                armPosition = ARM_COLLAPSED_INTO_ROBOT;
+                //claw.setPosition(1.0);
+
+                //wrist.setPosition(0.75);
+
+            }
 
 
 
@@ -525,7 +552,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
 
             ((DcMotorEx) viperSlide).setVelocity(1500); //Original Value = 2100
-           // viperSlide.setPower(0.5); // Adjust speed if needed - Original Value - 1.0
+            viperSlide.setPower(0.5); // Adjust speed if needed - Original Value - 1.0
             viperSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
