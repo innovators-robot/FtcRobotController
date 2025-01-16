@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 
 public class BasicAutonomousTest {
 
-    private BasicAutonomous basicAutonomous;
+    private BasicAutonomousLeft basicAutonomousLeft;
     @Mock
     private RobotHardware mockRobotHardware;
     @Mock
@@ -29,8 +29,8 @@ public class BasicAutonomousTest {
     @DisplayName("Test basic autonomous setup")
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        basicAutonomous = spy(new BasicAutonomous());
-        basicAutonomous.robot = mockRobotHardware;
+        basicAutonomousLeft = spy(new BasicAutonomousLeft());
+        basicAutonomousLeft.robot = mockRobotHardware;
 
         // Ensure that the robot hardware components are properly mocked
         mockRobotHardware.leftDriveMotor = mockLeftDriveMotor;
@@ -45,10 +45,10 @@ public class BasicAutonomousTest {
         doNothing().when(mockRobotHardware).init(any());
 
         // Mock the waitForStart method to prevent it from blocking
-        doNothing().when(basicAutonomous).waitForStart();
+        doNothing().when(basicAutonomousLeft).waitForStart();
 
         // Run the op mode
-        basicAutonomous.runOpMode();
+        basicAutonomousLeft.runOpMode();
 
         // Verify the sequence of operations
         InOrder inOrder = inOrder(mockRobotHardware, mockLeftDriveMotor, mockRightDriveMotor, mockArmWristTorqueServo);

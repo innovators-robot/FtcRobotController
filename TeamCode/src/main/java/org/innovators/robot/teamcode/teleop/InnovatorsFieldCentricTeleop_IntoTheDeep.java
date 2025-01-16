@@ -23,15 +23,19 @@
 package org.innovators.robot.teamcode.teleop;
 
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
 /*
  * This OpMode is an example driver-controlled (TeleOp) mode for the goBILDA 2024-2025 FTC
@@ -69,9 +73,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  */
 
 
-@TeleOp(name="FTC Starter Kit Example Robot (INTO THE DEEP)", group="Robot")
+@TeleOp(name="Field Centric Teleop - Innovators", group="Robot")
 //@Disabled
-public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMode {
+public class InnovatorsFieldCentricTeleop_IntoTheDeep extends LinearOpMode {
 
     /* Declare OpMode members. */
     //public DcMotor  leftDrive   = null; //the left drivetrain motor
@@ -129,7 +133,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     final double ARM_SCORE_SAMPLE_IN_LOW   = 80 * ARM_TICKS_PER_DEGREE; //Original Value = 160
     final double ARM_SCORE_SAMPLE_IN_HIGH   = 90 * ARM_TICKS_PER_DEGREE; //Original Value = 160 //Added by Serat
     final double ARM_ATTACH_HANGING_HOOK   = 130 * ARM_TICKS_PER_DEGREE; //Original Value = 120
-    final double ARM_WINCH_ROBOT           = 12  * ARM_TICKS_PER_DEGREE; //Original Value = 15
+    final double ARM_WINCH_ROBOT           = 5  * ARM_TICKS_PER_DEGREE; //Original Value = 15
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
     final double INTAKE_COLLECT    = -1.0;
@@ -148,23 +152,17 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     /* Variables to store the positions that the wrist should be set to when folding in, or folding out. */
     final double WRIST_FOLDED_IN   = 0.2; // Serat - This was 0.8333
     final double WRIST_FOLDED_OUT  = 0.75; // Serat - This was 0.5
-    final double WRIST_RIGHT_FUDGE  = 0.85; // Added for wrist control
-    final double WRIST_LEFT_FUDGE  = 0.65; // Added for wrist control
-
 
     /* A number in degrees that the triggers can adjust the arm position by */
     final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE; //= 15 * ARM_TICKS_PER_DEGREE;
 
     final double VIPER_FUDGE_FACTOR = 100;
 
-    final double WRIST_FUDGE_FACTOR = 0.10;
-
 
     /* Variables that are used to set the arm to a specific position */
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
     double viperPositionFudgeFactor;
-    double wristPositionFudgeFactor;
 
     double viperCurrentPosition;
     double viperNewPosition;
@@ -176,15 +174,12 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
     private static final int SLIDE_MAX_POSITION = 2050;  // Fully extended position Original Value = 3000
     private static final int SLIDE_MID_POSITION = 1000;  // Midway point Original Value = 1500
 
-    private static final int SLIDE_MAX_IN_SUBMERSIBLE = 1000;  // Added this on 01/15/2025 to restrict the slide from going out of robot limits
-
-
     double slidetargetPosition = (int)SLIDE_MIN_POSITION;
 
 
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException  {
         /*
         These variables are private to the OpMode, and are used to control the drivetrain.
          */
@@ -269,7 +264,7 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
         //intake.setPower(INTAKE_OFF);
         claw.setPosition(0.0);
         //wrist.setPosition(WRIST_FOLDED_IN); //Commented by Serat
-        wrist.setPosition(0.65);  //Added by Serat [previously 0.2] Updated from 0.85 to 0.65 on 01/16/2025
+        wrist.setPosition(0.85);  //Added by Serat [previously 0.2]
         wrist.setDirection(Servo.Direction.REVERSE); //Added by Serat to reverse the direction of the wrist servo - Do not change.
         finger.setPosition(FINGER_UP);
 
@@ -287,21 +282,33 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
         telemetry.update();
 
+        // Retrieve the IMU from the hardware map
+        IMU imu = hardwareMap.get(IMU.class, "imu");
+        // Adjust the orientation parameters to match your robot
+        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
+        // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
+        imu.initialize(parameters);
+
         /* Wait for the game driver to press play */
         waitForStart();
+
+        if (isStopRequested()) return;
+
 
         /* Run until the driver presses stop */
         while (opModeIsActive()) {
 
             //Added by Serat
             //armPosition = ARM_WINCH_ROBOT;
-            //armPosition = ARM_WINCH_ROBOT;
-            //finger.setPosition(FINGER_UP); //Commented on 01/16/2025 to let finger stay in position based on Driver 2's inputs
             wrist.setPosition(0.75);
-            //finger.setPosition(FINGER_STRAIGHT);
+            finger.setPosition(FINGER_STRAIGHT);
+            //armPosition = ARM_CLEAR_BARRIER;
 
 
 
+            // Comment Start for Rhino Wheels Drive
 
 
             /* Set the drive and turn variables to follow the joysticks on the gamepad.
@@ -334,6 +341,12 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             //leftDrive.setPower(left);
             //rightDrive.setPower(right);
 
+            /***** Comment End for Rhino Wheels Drive  **********/
+
+
+            /******** Comment Start for Robo Centric Drive
+
+
             // Get joystick values
             double y = -gamepad1.left_stick_y; // Y-axis for forward/backward
             double x = gamepad1.left_stick_x; // X-axis for strafing
@@ -360,6 +373,41 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             backLeft.setPower(backLeftPower);
             frontRight.setPower(frontRightPower);
             backRight.setPower(backRightPower);
+
+            Comment End for Robo Centric Drive ****************/
+
+
+            // Code Begins for Field Centric Driving
+
+            double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
+            double x = gamepad1.left_stick_x;
+            double rx = gamepad1.right_stick_x;
+
+            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+            // Rotate the movement direction counter to the bot's rotation
+            double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+            double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+
+            rotX = rotX * 1.1;  // Counteract imperfect strafing
+
+            // Denominator is the largest motor power (absolute value) or 1
+            // This ensures all the powers maintain the same ratio,
+            // but only if at least one is out of the range [-1, 1]
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+            double frontLeftPower = (rotY + rotX + rx) / denominator;
+            double backLeftPower = (rotY - rotX + rx) / denominator;
+            double frontRightPower = (rotY - rotX - rx) / denominator;
+            double backRightPower = (rotY + rotX - rx) / denominator;
+
+            frontLeft.setPower(frontLeftPower);
+            backLeft.setPower(backLeftPower);
+            frontRight.setPower(frontRightPower);
+            backRight.setPower(backRightPower);
+
+            //Code Ends for Field Centric Driving
+
+
 
 
             /* Here we handle the three buttons that have direct control of the intake speed.
@@ -423,15 +471,9 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 armPosition = ARM_COLLECT;
                 wrist.setPosition(WRIST_FOLDED_OUT);
                 intake.setPower(INTAKE_COLLECT); */
-
-                // 01/16/2025 - Updating this section to restrict slide extension in submersible
-
-                if (viperCurrentPosition < SLIDE_MAX_IN_SUBMERSIBLE && slidetargetPosition < SLIDE_MAX_IN_SUBMERSIBLE && armMotor.getCurrentPosition() < ARM_SCORE_SAMPLE_IN_HIGH) {
-                    viperCurrentPosition = viperSlide.getCurrentPosition();
-                    viperNewPosition = viperCurrentPosition + VIPER_FUDGE_FACTOR;
-                    slidetargetPosition = viperNewPosition;
-                }
-
+                viperCurrentPosition = viperSlide.getCurrentPosition();
+                viperNewPosition = viperCurrentPosition + VIPER_FUDGE_FACTOR;
+                slidetargetPosition = viperNewPosition;
             }
 
             else if (gamepad1.left_bumper){
@@ -444,21 +486,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
                 viperNewPosition = viperCurrentPosition - VIPER_FUDGE_FACTOR;
                 slidetargetPosition = viperNewPosition;
             }
-
-
-            if(gamepad2.right_bumper){
-                //wrist.setPosition(WRIST_RIGHT_FUDGE);
-                wrist.setPosition(wrist.getPosition()+WRIST_FUDGE_FACTOR);
-            }
-
-            else if (gamepad2.left_bumper){
-                //wrist.setPosition(WRIST_LEFT_FUDGE);
-                wrist.setPosition(wrist.getPosition()-WRIST_FUDGE_FACTOR);
-
-            }
-
-
-
 
 
 
@@ -568,9 +595,6 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
             The FUDGE_FACTOR is the number of degrees that we can adjust the arm by with this function. */
 
             armPositionFudgeFactor = FUDGE_FACTOR * (gamepad1.right_trigger + (-gamepad1.left_trigger));
-
-            //wristPositionFudgeFactor = WRIST_FUDGE_FACTOR + (gamepad2.right_bumper + (-gamepad2.left_bumper));
-
 
             /* Here we set the target position of our arm to match the variable that was selected
             by the driver.

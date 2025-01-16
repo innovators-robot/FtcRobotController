@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.innovators.robot.teamcode.hardware.RobotHardware;
 import org.innovators.robot.teamcode.util.Constants;
 
-@Autonomous(name="Autonomous", group="Autonomous")
-public class BasicAutonomous extends LinearOpMode {
+@Autonomous(name="Autonomous Left", group="Autonomous")
+public class BasicAutonomousLeft extends LinearOpMode {
     protected RobotHardware robot = new RobotHardware();
 
     @Override
